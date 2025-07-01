@@ -2,3 +2,4 @@ data/fruits
 logs/
 
 runs/
+__pycache__/

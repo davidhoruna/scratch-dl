@@ -13,7 +13,7 @@ class ResidualBlock(nn.Module):
                                padding=1, bias=False)
         self.bn2 = nn.BatchNorm2d(out_channels)
 
-        self.shortcut = nn.Identity()
+        self.shortcut = None
         if stride != 1 or in_channels != out_channels:
             self.shortcut = nn.Sequential(
                 nn.Conv2d(in_channels, out_channels, kernel_size=1, stride=stride, bias=False),
