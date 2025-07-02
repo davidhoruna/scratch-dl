@@ -10,14 +10,10 @@ Las **ResNets** (He et al., 2015) surgieron como respuesta al problema de **degr
 ### 1.1. Motivación
 
 Dado un mapeo objetivo $H(x)$, una red tradicional intenta aproximar directamente:
-$$
-{F}(x) \approx H(x)
-$$
+${F}(x) \approx H(x)$
 
 ResNet reformula esta tarea como el aprendizaje de un **residuo**:
-$$
-{F}(x) := H(x) - x \quad \Rightarrow \quad H(x) = {F}(x) + x
-$$
+${F}(x) := H(x) - x \quad \Rightarrow \quad H(x) = {F}(x) + x$
 
 Se agrega así una **conexión residual o atajo** (`shortcut`) que permite que el flujo de gradientes durante backpropagation atraviese más fácilmente la red, estabilizando el entrenamiento.
 
