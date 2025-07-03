@@ -1,0 +1,9 @@
+README.md
+setup.py
+src/resnet/__init__.py
+src/resnet/configs/__init__.py
+src/resnet/configs/train.py
+src/vision_models.egg-info/PKG-INFO
+src/vision_models.egg-info/SOURCES.txt
+src/vision_models.egg-info/dependency_links.txt
+src/vision_models.egg-info/top_level.txt
