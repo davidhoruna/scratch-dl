@@ -4,7 +4,7 @@ from torch.utils.data import Dataset
 from torchvision import datasets
 from torch.optim import Adam
 from torch.nn import CrossEntropyLoss
-from vision.models.resnet.resnet import ResNet
+from vision.models.resnet.resnet_model import ResNet
 from vision.configs import ResNetConfig
 from PIL import Image
 from pathlib import Path
