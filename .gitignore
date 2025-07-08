@@ -4,3 +4,4 @@ logs/
 runs/
 __pycache__/
 data/
+base_env.yaml

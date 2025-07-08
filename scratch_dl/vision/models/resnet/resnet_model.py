@@ -1,5 +1,5 @@
 import torch.nn as nn
-from vision.models.blocks import ResidualBlock
+from scratch_dl.vision.models.resnet.resnet_blocks import ResidualBlock
 
 class ResNet(nn.Module):
     def __init__(self, n_classes = 10):
