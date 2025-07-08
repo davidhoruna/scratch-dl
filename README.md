@@ -1,4 +1,4 @@
 ´´´
-pip install -e .
-python scripts/train.py -m resnet -d fruits
+pip install -e . 
+python scratch_dl/vision/train_vision.py
 ´´´
