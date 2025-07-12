@@ -1,8 +1,0 @@
-Epoch 1/5:  38%|██████████████████████████████████████████████▎                                                                          | 294/768 [00:18<00:29, 16.23it/s, loss=5.2]
-Traceback (most recent call last):
-  File "/home/lenovo/Escritorio/repos/scratch_dl/train.py", line 35, in <module>
-    train_vision(cfg)
-  File "/home/lenovo/Escritorio/repos/scratch_dl/scratch_dl/vision/train_vision.py", line 63, in train
-    epoch_loss += loss.item()
-                  ^^^^^^^^^^^
-KeyboardInterrupt

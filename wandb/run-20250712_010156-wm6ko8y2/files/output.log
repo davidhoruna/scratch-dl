@@ -1,8 +1,0 @@
-Epoch 1/5:   0%|                                                                                                                                             | 0/768 [00:00<?, ?it/s]
-Traceback (most recent call last):
-  File "/home/lenovo/Escritorio/repos/scratch_dl/train.py", line 35, in <module>
-    train_vision(cfg)
-  File "/home/lenovo/Escritorio/repos/scratch_dl/scratch_dl/vision/train_vision.py", line 55, in train
-    with autocast(enabled=cfg.amp):
-         ^^^^^^^^^^^^^^^^^^^^^^^^^
-TypeError: autocast.__init__() missing 1 required positional argument: 'device_type'
