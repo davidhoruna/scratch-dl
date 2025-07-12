@@ -1,10 +1,16 @@
 import torch.nn as nn
 from scratch_dl.vision.models.resnet.resnet_blocks import ResidualBlock
+from scratch_dl.vision.configs.schemas import ResNetConfig, BaseConfig
+
 
 class ResNet(nn.Module):
-    def __init__(self, n_classes = 10):
-        #
+    def __init__(self, cfg: BaseConfig = None):
         super(ResNet, self).__init__()
+        if cfg == None:
+            raise ValueError("Provide config file")
+        
+        self.n_classes = cfg.n_classes
+        
 
         self.in_channels = 64
         self.conv1 = nn.Sequential(
@@ -21,7 +27,7 @@ class ResNet(nn.Module):
 
         self.avgpool=nn.AdaptiveAvgPool2d((1,1))
         # final layer for preds
-        self.fc = nn.Linear(512, n_classes)
+        self.fc = nn.Linear(512, self.n_classes)
 
     # this will create a sequential block of layers 
     def _make_layer(self, block, out_channels, num_blocks, stride=1):

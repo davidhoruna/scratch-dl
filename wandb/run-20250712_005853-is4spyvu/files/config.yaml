@@ -1,0 +1,116 @@
+_wandb:
+    value:
+        cli_version: 0.21.0
+        e:
+            3gubd3hbe7zwsvy4u8pl1td41cg0m8nr:
+                args:
+                    - --model
+                    - resnet
+                    - --folder_structure
+                    - by_class
+                    - --folder_name
+                    - PokemonData
+                codePath: train.py
+                codePathLocal: train.py
+                cpu_count: 8
+                cpu_count_logical: 12
+                cudaVersion: "12.8"
+                disk:
+                    /:
+                        total: "491042553856"
+                        used: "125283827712"
+                email: d.huamanor@alum.up.edu.pe
+                executable: /home/lenovo/anaconda3/bin/python
+                git:
+                    commit: 2cfbb8d748770d26af85ad164361c1aa2c97d2ca
+                    remote: https://github.com/davidhoruna/scratch-dl.git
+                gpu: NVIDIA GeForce RTX 4050 Laptop GPU
+                gpu_count: 1
+                gpu_nvidia:
+                    - architecture: Ada
+                      cudaCores: 2560
+                      memoryTotal: "6439305216"
+                      name: NVIDIA GeForce RTX 4050 Laptop GPU
+                      uuid: GPU-7dc1c359-aa58-bf2a-750c-27b8cd917b7b
+                host: lenovo-LOQ-15IAX9
+                memory:
+                    total: "16462360576"
+                os: Linux-6.8.0-63-generic-x86_64-with-glibc2.39
+                program: /home/lenovo/Escritorio/repos/scratch_dl/train.py
+                python: CPython 3.12.7
+                root: /home/lenovo/Escritorio/repos/scratch_dl
+                startedAt: "2025-07-12T05:58:53.785146Z"
+                writerId: 3gubd3hbe7zwsvy4u8pl1td41cg0m8nr
+        m: []
+        python_version: 3.12.7
+        t:
+            "1":
+                - 1
+                - 41
+            "2":
+                - 1
+                - 41
+            "3":
+                - 16
+            "4": 3.12.7
+            "5": 0.21.0
+            "8":
+                - 2
+            "12": 0.21.0
+            "13": linux-x86_64
+amp:
+    value: false
+batch_size:
+    value: 8
+bilinear:
+    value: false
+checkpoint_dir:
+    value: ./checkpoints
+data_dir:
+    value: /home/lenovo/Escritorio/repos/scratch_dl/data/PokemonData
+epochs:
+    value: 5
+folder_name:
+    value: PokemonData
+folder_structure:
+    value: by_class
+gradient_clipping:
+    value: 1
+img_scale:
+    value: 0.5
+img_size:
+    value:
+        - 225
+        - 225
+inputs_dir:
+    value: data/images
+labels_dir:
+    value: data/labels
+learning_rate:
+    value: 1e-05
+lr:
+    value: 0.0001
+model:
+    value: resnet
+model_name:
+    value: resnet
+momentum:
+    value: 0.999
+n_channels:
+    value: 3
+n_classes:
+    value: 150
+num_blocks:
+    value: 5
+project:
+    value: vision-training
+save_checkpoint:
+    value: true
+save_checkpoints:
+    value: false
+val_percent:
+    value: 0.1
+val_split:
+    value: 0.1
+weight_decay:
+    value: 1e-08

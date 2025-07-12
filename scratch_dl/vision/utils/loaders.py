@@ -5,31 +5,20 @@ from torchvision import datasets
 import torch.optim as optim
 from torch.nn import CrossEntropyLoss
 from scratch_dl.vision.models.resnet.resnet_model import ResNet
-from scratch_dl.vision.utils.data_loading import VisionDataset
+from scratch_dl.vision.models.unet.unet_model import UNet
 from PIL import Image
 from pathlib import Path
 from datetime import datetime
 from scratch_dl.vision.configs.schemas import BaseConfig, ResNetConfig, UNetConfig
 import logging
 
-def load_config(model_name:str):
+def load_config(model_name:str, n_classes: int = 0, ):
     if model_name == "resnet":
         return ResNetConfig()
-    if model_name == "unet":
+    elif model_name == "unet":
         return UNetConfig()
-def get_dataset(cfg: BaseConfig):
-    kwargs = {
-        "inputs_dir": cfg.inputs_dir,
-        "labels_dir": cfg.labels_dir,
-        "scale": getattr(cfg, "scale", 1.0)  # Default to 1.0 if not present
-    }
-
-    if cfg.model_name == "unet":
-        return VisionDataset(task="segmentation", **kwargs)
-    elif cfg.model_name == "resnet":
-        return VisionDataset(task="classification", **kwargs)
     else:
-        raise ValueError(f"Unsupported model type: {cfg.model}")
+        raise ValueError(f"Unsupported model: {model_name}")
 
 
 def get_logger(name=__name__, level=logging.INFO):
@@ -59,28 +48,33 @@ def get_logger(name=__name__, level=logging.INFO):
     return logger
 
 
-def load_model(model_name: str):
+def load_model(cfg: BaseConfig = None):
+    model_name = cfg.model_name
     if model_name == 'resnet':
-        return ResNet()
+        return ResNet(cfg)
+    elif model_name == 'unet':
+        return UNet(cfg)
     elif model_name == 'gan':
         raise NotImplementedError("GAN not implemented yet")
     else:
         raise ValueError(f"Unsupported model: {model_name}")
 
-
-
-def load_optimloss(cfg: BaseConfig):
-    optimloss = {'optim':None,'loss':None}
-    model_name = cfg.model_name
-    model = load_model(model_name)
-
-    if cfg.model == 'resnet':
-        return optim.Adam(model.parameters(), cfg.lr), CrossEntropyLoss()
-    elif cfg.model == "unet":
-        optimloss['optim'] = optim.RMSprop(model.parameters(),
-                            lr=cfg.lr)
-        optimloss['loss'] = torch.nn.CrossEntropyLoss() if model.n_classes > 1 else torch.nn.BCEWithLogitsLoss()
+from torch import nn
+def load_optimloss(cfg: BaseConfig, model: nn.Module):
+    model_name = cfg.model.lower()
+    params = model.parameters()
+    if model_name == 'resnet':
+        # Return optimizer class and criterion
+        optimizer_class = optim.Adam(params, lr=cfg.lr, weight_decay=cfg.weight_decay)
+        criterion = CrossEntropyLoss()
+        return optimizer_class, criterion
+    elif model_name == "unet":
+        # Return optimizer class and criterion
+        optimizer_class = lambda params: optim.Adam(params, lr=cfg.lr, weight_decay=cfg.weight_decay)  # Changed from RMSprop to Adam for consistency
+        if cfg.n_classes > 1:
+            criterion = torch.nn.CrossEntropyLoss()
+        else:
+            criterion = torch.nn.BCEWithLogitsLoss()
+        return optimizer_class, criterion
     else:
         raise ValueError(f"No params for model: {cfg.model}")
-    
-    return optimloss

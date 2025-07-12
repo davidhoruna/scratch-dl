@@ -1,0 +1,48 @@
+{
+  "os":  "Linux-6.8.0-63-generic-x86_64-with-glibc2.39",
+  "python":  "CPython 3.12.7",
+  "startedAt":  "2025-07-12T06:01:56.690353Z",
+  "args":  [
+    "--model",
+    "resnet",
+    "--folder_structure",
+    "by_class",
+    "--folder_name",
+    "PokemonData"
+  ],
+  "program":  "/home/lenovo/Escritorio/repos/scratch_dl/train.py",
+  "codePath":  "train.py",
+  "codePathLocal":  "train.py",
+  "git":  {
+    "remote":  "https://github.com/davidhoruna/scratch-dl.git",
+    "commit":  "2cfbb8d748770d26af85ad164361c1aa2c97d2ca"
+  },
+  "email":  "d.huamanor@alum.up.edu.pe",
+  "root":  "/home/lenovo/Escritorio/repos/scratch_dl",
+  "host":  "lenovo-LOQ-15IAX9",
+  "executable":  "/home/lenovo/anaconda3/bin/python",
+  "cpu_count":  8,
+  "cpu_count_logical":  12,
+  "gpu":  "NVIDIA GeForce RTX 4050 Laptop GPU",
+  "gpu_count":  1,
+  "disk":  {
+    "/":  {
+      "total":  "491042553856",
+      "used":  "125284171776"
+    }
+  },
+  "memory":  {
+    "total":  "16462360576"
+  },
+  "gpu_nvidia":  [
+    {
+      "name":  "NVIDIA GeForce RTX 4050 Laptop GPU",
+      "memoryTotal":  "6439305216",
+      "cudaCores":  2560,
+      "architecture":  "Ada",
+      "uuid":  "GPU-7dc1c359-aa58-bf2a-750c-27b8cd917b7b"
+    }
+  ],
+  "cudaVersion":  "12.8",
+  "writerId":  "yig18juhccg2kuzgqonhjcziud0mgo8e"
+}

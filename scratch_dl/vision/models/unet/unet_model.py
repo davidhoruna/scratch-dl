@@ -1,26 +1,35 @@
 """ Full assembly of the parts to form the complete network """
 
-from unet_blocks import *
+import torch
+import torch.nn as nn
+from .unet_blocks import *
 
 
 class UNet(nn.Module):
-    def __init__(self, n_channels, n_classes, bilinear=False):
+    def __init__(self, config=None, n_channels=None, n_classes=None, bilinear=False):
         super(UNet, self).__init__()
-        self.n_channels = n_channels
-        self.n_classes = n_classes
-        self.bilinear = bilinear
+        
+        # Use config if provided, otherwise use individual parameters
+        if config is not None:
+            self.n_channels = config.n_channels
+            self.n_classes = config.n_classes
+            self.bilinear = config.bilinear
+        else:
+            self.n_channels = n_channels
+            self.n_classes = n_classes
+            self.bilinear = bilinear
 
-        self.inc = (DoubleConv(n_channels, 64))
+        self.inc = (DoubleConv(self.n_channels, 64))
         self.down1 = (Down(64, 128))
         self.down2 = (Down(128, 256))
         self.down3 = (Down(256, 512))
-        factor = 2 if bilinear else 1
+        factor = 2 if self.bilinear else 1
         self.down4 = (Down(512, 1024 // factor))
-        self.up1 = (Up(1024, 512 // factor, bilinear))
-        self.up2 = (Up(512, 256 // factor, bilinear))
-        self.up3 = (Up(256, 128 // factor, bilinear))
-        self.up4 = (Up(128, 64, bilinear))
-        self.outc = (OutConv(64, n_classes))
+        self.up1 = (Up(1024, 512 // factor, self.bilinear))
+        self.up2 = (Up(512, 256 // factor, self.bilinear))
+        self.up3 = (Up(256, 128 // factor, self.bilinear))
+        self.up4 = (Up(128, 64, self.bilinear))
+        self.outc = (OutConv(64, self.n_classes))
 
     def forward(self, x):
         x1 = self.inc(x)

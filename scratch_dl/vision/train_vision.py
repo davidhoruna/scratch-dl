@@ -1,113 +1,115 @@
 import argparse
 import torch
-import torch.nn.functional as F
 from torch.utils.data import DataLoader, random_split
-from torch.cuda.amp import autocast, GradScaler
 from pathlib import Path
 from tqdm import tqdm
 import wandb
 import logging
 import os
 
+from scratch_dl.vision.utils.data import load_data
 from scratch_dl.vision.utils.loaders import (
     load_config,
     load_model,
     load_optimloss,
-    get_dataset,
     get_logger,
 )
+from scratch_dl.vision.configs.schemas import ResNetConfig, BaseConfig
 
-def train(cfg):
+
+
+def train(cfg: BaseConfig):
     logger = get_logger("train")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
 
-    dataset = get_dataset(cfg)
+    
+    dataset, labels = load_data(cfg)  # Expecting (Dataset, label_dict)
+    
     val_len = int(len(dataset) * cfg.val_split)
     train_len = len(dataset) - val_len
     train_ds, val_ds = random_split(dataset, [train_len, val_len], generator=torch.Generator().manual_seed(0))
-
     train_loader = DataLoader(train_ds, batch_size=cfg.batch_size, shuffle=True, num_workers=os.cpu_count(), pin_memory=True)
     val_loader = DataLoader(val_ds, batch_size=cfg.batch_size, shuffle=False, num_workers=os.cpu_count(), pin_memory=True)
 
-    model = load_model(cfg.model)
+    cfg.n_classes = len(labels)
+    model = load_model(cfg)
     model.to(device)
 
-    optimizer, criterion = load_optimloss(cfg)
+    optimizer, criterion = load_optimloss(cfg, model)
 
-    
-    scaler = GradScaler(device, enabled=cfg.amp)
-
-    wandb.init(project=cfg.project, config=vars(cfg))
+    wandb.init(project=cfg.project, config=vars(cfg), dir=cfg.ROOT_DIR)
     global_step = 0
 
     for epoch in range(cfg.epochs):
         model.train()
         epoch_loss = 0
+        correct_predictions_train = 0
+        total_samples_train = 0
 
         with tqdm(total=len(train_loader), desc=f"Epoch {epoch+1}/{cfg.epochs}") as pbar:
-            for batch, (x,y) in enumerate(train_loader):
+            for x, y in train_loader:
                 x, y = x.to(device), y.to(device)
 
                 optimizer.zero_grad(set_to_none=True)
-                with autocast(device_type=device.type if device.type != "mps" else "cpu", enabled=cfg.amp):
-                    out = model(x)
-                    loss = criterion(out, y)
+                out = model(x)
+                loss = criterion(out, y)
 
-                scaler.scale(loss).backward()
-                scaler.step(optimizer)
-                scaler.update()
+                loss.backward()
+                optimizer.step()
 
                 epoch_loss += loss.item()
+                
+                # Calculate training accuracy
+                # For classification, assuming 'out' contains logits and 'y' contains class indices
+                preds = torch.argmax(out, dim=1)
+                correct_predictions_train += (preds == y).sum().item()
+                total_samples_train += y.size(0)
+
                 global_step += 1
                 wandb.log({"train_loss": loss.item(), "step": global_step})
+                wandb.log({"train_accuracy": correct_predictions_train / total_samples_train, "step": global_step})
                 pbar.update(1)
                 pbar.set_postfix(loss=loss.item())
+        
+        avg_train_loss = epoch_loss / len(train_loader)
+        train_accuracy = correct_predictions_train / total_samples_train
+        wandb.log({"avg_train_loss_epoch": avg_train_loss, "train_accuracy_epoch": train_accuracy, "epoch": epoch})
+        logger.info(f"Epoch {epoch + 1} training loss: {avg_train_loss:.4f}, training accuracy: {train_accuracy:.4f}")
+        
 
-        # Optionally: add validation
+        # Validation loop
         model.eval()
         val_loss = 0
+        correct_predictions_val = 0
+        total_samples_val = 0
         with torch.no_grad():
-            for batch, (x,y) in val_loader:
+            for x, y in val_loader:
                 x, y = x.to(device), y.to(device)
-                with autocast(device_type=device.type if device.type != "mps" else "cpu", enabled=cfg.amp):
-                    out = model(x)
-                    val_loss += criterion(out, y).item()
+                out = model(x)
+                loss = criterion(out, y)
+                val_loss += loss.item()
 
-        val_loss /= len(val_loader)
-        wandb.log({"val_loss": val_loss, "epoch": epoch})
-        logger.info(f"Validation loss after epoch {epoch + 1}: {val_loss}")
+                # Calculate validation accuracy
+                preds = torch.argmax(out, dim=1)
+                correct_predictions_val += (preds == y).sum().item()
+                total_samples_val += y.size(0)
+                wandb.log({"val_loss": loss.item()})
+
+
+        avg_val_loss = val_loss / len(val_loader)
+        val_accuracy = correct_predictions_val / total_samples_val
+        wandb.log({"avg_val_loss": avg_val_loss, "val_accuracy": val_accuracy, "epoch": epoch})
+        logger.info(f"Validation loss after epoch {epoch + 1}: {avg_val_loss:.4f}, validation accuracy: {val_accuracy:.4f}")
 
         if cfg.save_checkpoints:
-            ckpt_path = Path(cfg.checkpoint_dir)
+            ckpt_path = Path(os.path.join(cfg.ROOT_DIR, 'checkpoints', cfg.checkpoint_dir))
             ckpt_path.mkdir(parents=True, exist_ok=True)
-            torch.save(model.state_dict(), ckpt_path / f"{cfg.model}_epoch{epoch+1}.pth")
-            logger.info(f"Saved checkpoint: {ckpt_path / f'{cfg.model}_epoch{epoch+1}.pth'}")
+            if epoch == cfg.epochs:
+                ckpt_file = ckpt_path / f"final_weights.pth"
+            else:
+                ckpt_file = ckpt_path / f"{cfg.model}_epoch{epoch+1}.pth"
 
-
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default='unet', type=str, required=False, help="Model name: unet, resnet")
-    parser.add_argument("--epochs", type=int, default=5)
-    parser.add_argument("--batch_size", type=int, default=8)
-    parser.add_argument("--lr", type=float, default=1e-4)
-    parser.add_argument("--val_split", type=float, default=0.1)
-    parser.add_argument("--amp", action="store_true")
-    parser.add_argument("--save_checkpoints", action="store_true")
-    parser.add_argument("--checkpoint_dir", type=str, default="./checkpoints")
-    parser.add_argument("--project", type=str, default="vision-training")
-    parser.add_argument("--images_dir", type=str, default="./data/images")
-    parser.add_argument("--mask_dir", type=str, default="./data/masks")
-    return parser.parse_args()
-
-
-if __name__ == "__main__":
-    args = parse_args()
-    cfg = load_config(args.model)
-
-    # Override config values from CLI
-    for k, v in vars(args).items():
-        if hasattr(cfg, k):
-            setattr(cfg, k, v)
-
-    train(cfg)
+            torch.save(model.state_dict(), ckpt_file)
+            logger.info(f"Saved checkpoint: {ckpt_file}")
+  
