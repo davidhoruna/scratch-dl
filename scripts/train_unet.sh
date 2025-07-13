@@ -1,0 +1,11 @@
+python train.py \
+    --model unet \
+    --folder_name flood-area-segmentation \
+    --epochs 20 \
+    --batch_size 3 \
+    --lr 1e-5 \
+    --val_split 0.1 \
+    --amp \
+    --save_checkpoints \
+    --checkpoint_dir flood-area-segmentation  \
+    --project flood-area-segmentation  \

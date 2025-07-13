@@ -70,7 +70,7 @@ def load_optimloss(cfg: BaseConfig, model: nn.Module):
         return optimizer_class, criterion
     elif model_name == "unet":
         # Return optimizer class and criterion
-        optimizer_class = lambda params: optim.Adam(params, lr=cfg.lr, weight_decay=cfg.weight_decay)  # Changed from RMSprop to Adam for consistency
+        optimizer_class = optim.Adam(params, lr=cfg.lr, weight_decay=cfg.weight_decay)  # Changed from RMSprop to Adam for consistency
         if cfg.n_classes > 1:
             criterion = torch.nn.CrossEntropyLoss()
         else:

@@ -4,7 +4,7 @@ from pathlib import Path
 import argparse
 from definitons import ROOT_DIR
 
-KAGGLE_DATASET = "lantian773030/pokemonclassification"
+KAGGLE_DATASET = ""
 
 def download_kaggle_dataset(dataset: str, dest_dir: str):
     os.makedirs(dest_dir, exist_ok=True)
@@ -18,5 +18,9 @@ def download_kaggle_dataset(dataset: str, dest_dir: str):
     print("Download complete.")
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument('dataset')
+    args=parser.parse_args()
+    KAGGLE_DATASET = args.dataset
     DATA_DIR = Path(ROOT_DIR) / "data"
-    download_kaggle_dataset(KAGGLE_DATASET, str(DATA_DIR))
+    download_kaggle_dataset(KAGGLE_DATASET, str(f"{DATA_DIR}/{KAGGLE_DATASET.split('/')[1]}"))

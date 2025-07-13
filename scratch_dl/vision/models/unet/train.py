@@ -7,24 +7,25 @@ import wandb
 import logging
 import os
 
-from scratch_dl.vision.utils.data import load_data
+from scratch_dl.vision.utils.data import VisionDataset
 from scratch_dl.vision.utils.loaders import (
     load_config,
     load_model,
     load_optimloss,
     get_logger,
 )
-from scratch_dl.vision.configs.schemas import ResNetConfig, BaseConfig
+from scratch_dl.vision.configs.schemas import UNetConfig, BaseConfig
+from scratch_dl.vision.data_loaders.segmentation import SegmentationDataset
 
 
 
-def train(cfg: BaseConfig):
+def train_unet(cfg: UNetConfig):
     logger = get_logger("train")
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     logger.info(f"Using device: {device}")
 
     
-    dataset, labels = load_data(cfg)  # Expecting (Dataset, label_dict)
+    dataset = SegmentationDataset(cfg).load()  # Expecting (Dataset, label_dict)
     
     val_len = int(len(dataset) * cfg.val_split)
     train_len = len(dataset) - val_len
@@ -32,16 +33,22 @@ def train(cfg: BaseConfig):
     train_loader = DataLoader(train_ds, batch_size=cfg.batch_size, shuffle=True, num_workers=os.cpu_count(), pin_memory=True)
     val_loader = DataLoader(val_ds, batch_size=cfg.batch_size, shuffle=False, num_workers=os.cpu_count(), pin_memory=True)
 
-    cfg.n_classes = len(labels)
+    
     model = load_model(cfg)
     model.to(device)
 
-    optimizer, criterion = load_optimloss(cfg, model)
+    optimizer = torch.optim.Adam(model.parameters(), lr=cfg.lr, weight_decay=cfg.weight_decay)  # Changed from RMSprop to Adam for consistency
+    if cfg.n_classes > 1:
+        
+        criterion = torch.nn.CrossEntropyLoss()
+    else:
+        criterion = torch.nn.BCEWithLogitsLoss()
 
     wandb.init(project=cfg.project, config=vars(cfg), dir=cfg.ROOT_DIR)
     global_step = 0
-
+    
     for epoch in range(cfg.epochs):
+
         model.train()
         epoch_loss = 0
         correct_predictions_train = 0
@@ -50,6 +57,7 @@ def train(cfg: BaseConfig):
         with tqdm(total=len(train_loader), desc=f"Epoch {epoch+1}/{cfg.epochs}") as pbar:
             for x, y in train_loader:
                 x, y = x.to(device), y.to(device)
+                y = y.squeeze(1).long() 
 
                 optimizer.zero_grad(set_to_none=True)
                 out = model(x)
@@ -63,9 +71,13 @@ def train(cfg: BaseConfig):
                 # Calculate training accuracy
                 # For classification, assuming 'out' contains logits and 'y' contains class indices
                 preds = torch.argmax(out, dim=1)
+                if cfg.n_classes == 1:
+                    preds = (torch.sigmoid(out) > 0.5).float()
+                else:
+                    preds = torch.argmax(out, dim=1)
                 correct_predictions_train += (preds == y).sum().item()
-                total_samples_train += y.size(0)
 
+                total_samples_train += torch.numel(y)
                 global_step += 1
                 wandb.log({"train_loss": loss.item(), "step": global_step})
                 wandb.log({"train_accuracy": correct_predictions_train / total_samples_train, "step": global_step})

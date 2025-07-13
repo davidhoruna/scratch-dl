@@ -1,5 +1,7 @@
 # root/train.py
-from scratch_dl.vision.train_vision import train as train_vision
+from scratch_dl.vision.models.resnet.train import train_resnet
+from scratch_dl.vision.models.unet.train import train_unet
+
 
 from scratch_dl.vision.configs.schemas import BaseConfig, ResNetConfig, UNetConfig
 import argparse
@@ -17,8 +19,6 @@ def parse_args():
     parser.add_argument("--save_checkpoints", action="store_true")
     parser.add_argument("--checkpoint_dir", type=str, default="./checkpoints")
     parser.add_argument("--project", type=str, default="pokemon-classification")
-    parser.add_argument("--images_dir", type=str, default="./data/images")
-    parser.add_argument("--mask_dir", type=str, default="./data/masks")
     return parser.parse_args()
 
 args = parse_args()
@@ -27,12 +27,12 @@ args = parse_args()
 if args.model == "unet":
     cfg = UNetConfig()
     cfg.update_from_args(args)
-    train_vision(cfg)
+    train_unet(cfg)
 elif args.model == "resnet":
 
     cfg = ResNetConfig()
     cfg.update_from_args(args)
-    train_vision(cfg)
+    train_resnet(cfg)
 
 
 elif args.model == "ppo":

@@ -6,18 +6,15 @@ from .unet_blocks import *
 
 
 class UNet(nn.Module):
-    def __init__(self, config=None, n_channels=None, n_classes=None, bilinear=False):
+    def __init__(self, cfg):
         super(UNet, self).__init__()
         
-        # Use config if provided, otherwise use individual parameters
-        if config is not None:
-            self.n_channels = config.n_channels
-            self.n_classes = config.n_classes
-            self.bilinear = config.bilinear
-        else:
-            self.n_channels = n_channels
-            self.n_classes = n_classes
-            self.bilinear = bilinear
+        # Use cfg if provided, otherwise use individual parameters
+        if cfg is not None:
+            self.n_channels = cfg.n_channels
+            self.n_classes = cfg.n_classes
+            self.bilinear = cfg.bilinear
+        
 
         self.inc = (DoubleConv(self.n_channels, 64))
         self.down1 = (Down(64, 128))
