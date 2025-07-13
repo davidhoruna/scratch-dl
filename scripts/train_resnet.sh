@@ -2,8 +2,8 @@ python train.py \
     --model resnet \
     --folder_structure ImageFolder \
     --folder_name PokemonData \
-    --epochs 20 \
-    --batch_size 32 \
+    --epochs 50 \
+    --batch_size 64 \
     --lr 1e-5 \
     --val_split 0.1 \
     --amp \

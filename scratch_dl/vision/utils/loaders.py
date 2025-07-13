@@ -4,7 +4,6 @@ from torch.utils.data import Dataset
 from torchvision import datasets
 import torch.optim as optim
 from torch.nn import CrossEntropyLoss
-from scratch_dl.vision.models.resnet.resnet_model import ResNet
 from scratch_dl.vision.models.unet.unet_model import UNet
 from PIL import Image
 from pathlib import Path

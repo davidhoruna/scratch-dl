@@ -4,6 +4,7 @@ from torchvision import transforms
 from typing import Optional, Callable, Tuple
 from definitons import ROOT_DIR  # Ensure this is defined globally before use
 import yaml
+from torch import nn
 
 
 @dataclass
@@ -25,8 +26,7 @@ class BaseConfig:
     weight_decay: float = 1e-4
     momentum: float = 0.999
     gradient_clipping: float = 1.0
-    model: str = "unet"
-    model_name: str = "unet"
+    model_name: str = ""
     n_classes: int = 2
     n_channels: int = 3
     bilinear: bool = False
@@ -63,12 +63,19 @@ class UNetConfig(BaseConfig):
 
 @dataclass
 class ResNetConfig(BaseConfig):
+    model: nn.Module = None
     task: str = "classification"
     n_classes: int = 151
     num_blocks: int = 5
-    transform_img: Optional[Callable] = field(default_factory=lambda: transforms.Compose([
-        transforms.Resize((224, 224)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406],
-                             std=[0.229, 0.224, 0.225])
-    ]))
+    transform_train=transforms.Compose([
+            transforms.Resize((224,224)),
+    transforms.RandomHorizontalFlip(),
+    transforms.ColorJitter(brightness=0.2, contrast=0.2),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])]) # Example mean and std
+    
+    transform_test=transforms.Compose([
+            transforms.Resize((224,224)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean= [0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])

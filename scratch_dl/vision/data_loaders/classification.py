@@ -25,7 +25,7 @@ class ClassificationDataset:
             raise ValueError("Unsupported structure type. Use 'ImageFolder' or 'Flat'.")
 
     def _load_imagefolder(self):
-        dataset = ImageFolder(root=self.cfg.data_dir, transform=self.cfg.transforms)
+        dataset = ImageFolder(root=self.cfg.data_dir, transform=None)
         return dataset, dataset.class_to_idx
 
     def _load_flat(self):
@@ -61,5 +61,22 @@ class ClassificationDataset:
                     raise KeyError(f"Label for {image_path.name} not found in labels.txt")
                 return self.transform(image), label
 
-        dataset = CustomFlatDataset(self.cfg.data_dir, self.cfg.transforms)
-        return dataset, dataset.labels
+        dataset = CustomFlatDataset(self.cfg.data_dir, transform=None)
+        unique_labels = set(dataset.labels.values)
+        return dataset, unique_labels
+
+class DatasetFromSubset(Dataset):
+    def __init__(self, subset, transform=None):
+        self.subset = subset
+        self.transform = transform
+
+    def __getitem__(self, index):
+        # The subset's __getitem__ returns (image, label) from the original dataset
+        # The image will be in PIL format because the original ImageFolder was loaded with transform=None
+        x, y = self.subset[index]
+        if self.transform:
+            x = self.transform(x)
+        return x, y
+
+    def __len__(self):
+        return len(self.subset)

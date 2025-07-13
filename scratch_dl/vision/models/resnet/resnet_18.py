@@ -3,9 +3,9 @@ from scratch_dl.vision.models.resnet.resnet_blocks import ResidualBlock
 from scratch_dl.vision.configs.schemas import ResNetConfig, BaseConfig
 
 
-class ResNet(nn.Module):
+class ResNet18(nn.Module):
     def __init__(self, cfg: BaseConfig = None):
-        super(ResNet, self).__init__()
+        super(ResNet18, self).__init__()
         if cfg == None:
             raise ValueError("Provide config file")
         
@@ -26,6 +26,7 @@ class ResNet(nn.Module):
         self.layer3=self._make_layer(ResidualBlock, 512, 2)
 
         self.avgpool=nn.AdaptiveAvgPool2d((1,1))
+        
         # final layer for preds
         self.fc = nn.Linear(512, self.n_classes)
 
@@ -67,6 +68,7 @@ class ResNet(nn.Module):
         
         # flattens the output to match the linear layer
         out=out.view(out.size(0),-1)
+        
         out=self.fc(out)
 
         
