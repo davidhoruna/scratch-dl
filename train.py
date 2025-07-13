@@ -7,10 +7,9 @@ from scratch_dl.vision.configs.schemas import BaseConfig, ResNetConfig, UNetConf
 import argparse
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--model", default='resnet', type=str, help="Model name: unet, resnet")
+    parser.add_argument("-m", "--model_name", default='resnet50', type=str, help="Model name: unet, resnet")
     parser.add_argument("--folder_name", default='PokemonData', type=str, help="Folder name in data/ dir")
-    parser.add_argument("--folder_structure", default='by_class', type=str, help="Folder structure (by_class or flat)")
-
+    parser.add_argument("--folder_structure", default='ImageFolder', type=str, help="Folder structure (by_class or flat)")
     parser.add_argument("--epochs", type=int, default=20)
     parser.add_argument("--batch_size", type=int, default=32)
     parser.add_argument("--lr", type=float, default=1e-5)
@@ -24,11 +23,11 @@ def parse_args():
 args = parse_args()
 
 # Dispatch based on model type
-if args.model == "unet":
+if args.model_name == "unet":
     cfg = UNetConfig()
     cfg.update_from_args(args)
     train_unet(cfg)
-elif args.model == "resnet":
+elif args.model_name == "resnet50":
 
     cfg = ResNetConfig()
     cfg.update_from_args(args)

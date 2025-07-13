@@ -1,5 +1,5 @@
 python train.py \
-    --model resnet \
+    --model_name resnet50 \
     --folder_structure ImageFolder \
     --folder_name PokemonData \
     --epochs 50 \

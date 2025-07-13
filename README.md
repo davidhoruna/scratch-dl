@@ -5,8 +5,8 @@
 pip install -e . 
 
 python train.py \
-    --model resnet \
-    --folder_structure by_class \
+    --model_name resnet50 \
+    --folder_structure ImageFolder \
     --folder_name PokemonData \
     --epochs 20 \
     --batch_size 32 \
